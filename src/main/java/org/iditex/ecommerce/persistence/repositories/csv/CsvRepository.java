@@ -19,7 +19,7 @@ public abstract class CsvRepository<T> {
         return elements;
     }
 
-    public void close() throws Exception {
+    public void close() throws CsvRepositoryException {
 
     }
 
