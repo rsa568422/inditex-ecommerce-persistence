@@ -18,6 +18,7 @@
         <ecommerce.version.junit-jupiter> 5.9.2 </ecommerce.version.junit-jupiter>
         <ecommerce.version.mockito-core> 5.2.0 </ecommerce.version.mockito-core>
         <ecommerce.version.mockito-junit-jupiter> 5.2.0 </ecommerce.version.mockito-junit-jupiter>
+        <ecommerce.version.gson> 2.10.1 </ecommerce.version.gson>
     </properties>
 
     <dependencies>
@@ -50,6 +51,11 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
             <version>${ecommerce.version.mockito-junit-jupiter}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>${ecommerce.version.gson}</version>
         </dependency>
     </dependencies>
 

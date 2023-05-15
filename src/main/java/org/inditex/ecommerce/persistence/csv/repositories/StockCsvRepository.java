@@ -1,17 +1,12 @@
-package org.iditex.ecommerce.persistence.repositories.csv;
+package org.inditex.ecommerce.persistence.csv.repositories;
 
 import org.iditex.ecommerce.model.entities.Stock;
 import org.iditex.ecommerce.model.repositories.StockRepository;
+import org.inditex.ecommerce.persistence.csv.entities.StockDto;
 
 import java.util.Optional;
 
-import static org.iditex.ecommerce.persistence.repositories.csv.CsvRepository.Paths.STOCKS;
-
-public class StockCsvRepository extends CsvRepository<Stock> implements StockRepository {
-
-    public StockCsvRepository() {
-        super(STOCKS.toString());
-    }
+public class StockCsvRepository extends CsvRepository<StockDto, Stock> implements StockRepository {
 
     @Override
     public Optional<Stock> findBySizeId(Long sizeId) {
@@ -23,4 +18,15 @@ public class StockCsvRepository extends CsvRepository<Stock> implements StockRep
         String[] columns = line.split(",");
         return new Stock(Long.parseLong(columns[0].trim()), Long.parseLong(columns[1].trim()));
     }
+
+    @Override
+    protected Class<StockDto> getDtoClass() {
+        return StockDto.class;
+    }
+
+    @Override
+    protected Class<Stock> getEntityClass() {
+        return Stock.class;
+    }
+
 }
