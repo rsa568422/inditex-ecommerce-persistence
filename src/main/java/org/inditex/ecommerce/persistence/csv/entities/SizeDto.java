@@ -3,6 +3,7 @@ package org.inditex.ecommerce.persistence.csv.entities;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.inditex.ecommerce.persistence.csv.Files;
 import org.inditex.ecommerce.persistence.csv.annotations.*;
 import org.inditex.ecommerce.persistence.csv.repositories.StockCsvRepository;
 
@@ -11,7 +12,7 @@ import java.util.Optional;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Source(fileName = "size-1")
+@Source(fileName = Files.SIZES)
 public class SizeDto {
 
     @PrimaryKey

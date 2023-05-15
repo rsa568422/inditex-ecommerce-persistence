@@ -9,24 +9,9 @@ import java.util.stream.Collectors;
 
 public class SizeCsvRepository extends CsvRepository<SizeDto, Size> implements SizeRepository {
 
-    private static final StockCsvRepository STOCK_CSV_REPOSITORY = new StockCsvRepository();
-
     @Override
     public Set<Size> findByProductId(Long productId) {
         return elements.stream().filter(size -> size.getProductId().equals(productId)).collect(Collectors.toSet());
-    }
-
-    @Override
-    protected Size parse(String line) {
-        String[] columns = line.split(",");
-        Long id = Long.valueOf(columns[0].trim());
-        return new Size(
-                id,
-                Long.parseLong(columns[1].trim()),
-                Boolean.parseBoolean(columns[2].trim()),
-                Boolean.parseBoolean(columns[3].trim()),
-                STOCK_CSV_REPOSITORY.findBySizeId(id)
-        );
     }
 
     @Override

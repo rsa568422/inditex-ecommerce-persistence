@@ -3,6 +3,7 @@ package org.inditex.ecommerce.persistence.csv.entities;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.inditex.ecommerce.persistence.csv.Files;
 import org.inditex.ecommerce.persistence.csv.annotations.Column;
 import org.inditex.ecommerce.persistence.csv.annotations.ForeignKey;
 import org.inditex.ecommerce.persistence.csv.annotations.Source;
@@ -10,7 +11,7 @@ import org.inditex.ecommerce.persistence.csv.annotations.Source;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Source(fileName = "stock")
+@Source(fileName = Files.STOCKS)
 public class StockDto {
 
     @Column(index = 0)

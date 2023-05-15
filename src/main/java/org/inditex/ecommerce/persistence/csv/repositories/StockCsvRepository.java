@@ -14,12 +14,6 @@ public class StockCsvRepository extends CsvRepository<StockDto, Stock> implement
     }
 
     @Override
-    protected Stock parse(String line) {
-        String[] columns = line.split(",");
-        return new Stock(Long.parseLong(columns[0].trim()), Long.parseLong(columns[1].trim()));
-    }
-
-    @Override
     protected Class<StockDto> getDtoClass() {
         return StockDto.class;
     }
