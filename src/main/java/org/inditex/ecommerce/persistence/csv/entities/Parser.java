@@ -19,15 +19,15 @@ public class Parser {
         return null;
     }
 
-    public static Product parseToProduct(ProductDto dto) {
+    private static Product parseToProduct(ProductDto dto) {
         return new Product(dto.getId(), dto.getSequence(), dto.getSizes().stream().map(Parser::parseToSize).collect(Collectors.toSet()));
     }
 
-    public static Size parseToSize(SizeDto dto) {
+    private static Size parseToSize(SizeDto dto) {
         return new Size(dto.getId(), dto.getProductId(), dto.isBackSoon(), dto.isSpecial(), parseToStock(dto.getStock()));
     }
 
-    public static Stock parseToStock(StockDto dto) {
+    private static Stock parseToStock(StockDto dto) {
         if (dto == null) return null;
         return new Stock(dto.getSizeId(), dto.getQuantity());
     }
