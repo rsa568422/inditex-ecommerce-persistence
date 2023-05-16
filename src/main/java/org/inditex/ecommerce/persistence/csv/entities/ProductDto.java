@@ -1,6 +1,5 @@
 package org.inditex.ecommerce.persistence.csv.entities;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.inditex.ecommerce.persistence.csv.Files;
@@ -13,7 +12,6 @@ import java.util.Set;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @Source(fileName = Files.PRODUCTS)
 public class ProductDto implements Dto {
 
