@@ -1,6 +1,8 @@
-package org.iditex.ecommerce.persistence.repositories.csv;
+package org.inditex.ecommerce.persistence.csv.exceptions;
 
-public class CsvRepositoryException extends RuntimeException {
+import org.iditex.ecommerce.model.repositories.RepositoryException;
+
+public class CsvRepositoryException extends RepositoryException {
 
     public CsvRepositoryException() {
     }
