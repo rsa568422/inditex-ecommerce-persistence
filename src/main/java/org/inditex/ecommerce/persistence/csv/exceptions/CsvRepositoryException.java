@@ -1,4 +1,4 @@
-package org.iditex.ecommerce.persistence.repositories.csv;
+package org.inditex.ecommerce.persistence.csv.exceptions;
 
 import org.iditex.ecommerce.model.repositories.RepositoryException;
 
