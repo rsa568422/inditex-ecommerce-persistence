@@ -13,7 +13,7 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @Source(fileName = Files.PRODUCTS)
-public class ProductDto implements Dto {
+public class ProductDto implements Dto, Comparable<ProductDto> {
 
     @PrimaryKey
     private Long id;
@@ -24,4 +24,8 @@ public class ProductDto implements Dto {
     @OneToMany(source = SizeDto.class)
     private Set<SizeDto> sizes;
 
+    @Override
+    public int compareTo(ProductDto o) {
+        return sequence.compareTo(o.sequence);
+    }
 }
