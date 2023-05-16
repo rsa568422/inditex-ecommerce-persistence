@@ -1,35 +1,37 @@
 package org.inditex.ecommerce.persistence.csv.repositories;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import org.inditex.ecommerce.persistence.csv.annotations.Column;
-import org.inditex.ecommerce.persistence.csv.annotations.OneToMany;
-import org.inditex.ecommerce.persistence.csv.annotations.PrimaryKey;
-import org.inditex.ecommerce.persistence.csv.annotations.Source;
+import org.inditex.ecommerce.persistence.csv.annotations.*;
+import org.inditex.ecommerce.persistence.csv.entities.Dto;
+import org.inditex.ecommerce.persistence.csv.entities.Parser;
 import org.inditex.ecommerce.persistence.csv.exceptions.CsvRepositoryException;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public abstract class CsvRepository<D, E> {
+public abstract class CsvRepository<D extends Dto, E> {
 
     protected final Set<E> elements;
 
     protected CsvRepository() {
-        this.elements = getFromCsv(String.format("%s.csv", getDtoClass().getAnnotation(Source.class).fileName()));
+        this.elements = (Set<E>) getFromCsv(getFileName(getDtoClass().getAnnotation(Source.class).fileName().toString()), getDtoClass());
     }
 
     protected abstract Class<D> getDtoClass();
 
-    protected abstract Class<E> getEntityClass();
+    private static String getFileName(String source) {
+        return String.format("%s.csv", source);
+    }
 
     private static Stream<String> readCsv(String fileName) {
         try {
@@ -40,21 +42,20 @@ public abstract class CsvRepository<D, E> {
         }
     }
 
-    private Set<E> getFromCsv(String fileName) {
-        Gson gson = new GsonBuilder().create();
+    private static Set<?> getFromCsv(String fileName, Class<? extends Dto> dtoClass) {
         return readCsv(fileName)
                 .map(CsvRepository::getColumns)
-                .map(columns -> parse2(getDtoClass(), columns))
-                .map(dto -> gson.fromJson(gson.toJson(dto), getEntityClass()))
+                .map(columns -> parse(dtoClass, columns))
+                .map(Parser::parse)
                 .collect(Collectors.toSet());
     }
 
-    private static <T> T parse2(Class<T> dtoClass, String[] columns) {
+    private static <T> T parse(Class<T> dtoClass, String[] columns) {
         try {
             T dto = dtoClass.getConstructor().newInstance();
             setColumns(dtoClass, dto, columns);
-            setOneToMany(dtoClass);
-            setOneToOne();
+            setOneToMany(dtoClass, dto);
+            setOneToOne(dtoClass, dto);
             return dto;
         } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             throw new CsvRepositoryException(e);
@@ -85,15 +86,111 @@ public abstract class CsvRepository<D, E> {
                 });
     }
 
-    private static <T> void setOneToMany(Class<T> dtoClass) {
+    private static <D> void setOneToMany(Class<D> dtoClass, D dto) {
+        String id = Arrays.stream(dtoClass.getDeclaredFields())
+                .filter(field -> field.isAnnotationPresent(PrimaryKey.class))
+                .findFirst()
+                .map(field -> {
+                    Method getter = Arrays.stream(dtoClass.getMethods())
+                            .filter(method -> method.getName().toLowerCase().contains(field.getName().toLowerCase()))
+                            .filter(method -> method.getName().toLowerCase().startsWith("get"))
+                            .findFirst()
+                            .orElseThrow(() -> new CsvRepositoryException("Classes with some field annotated with @OneToMany needs another field annotated with @PrimaryKey"));
+                    try {
+                        return getter.invoke(dto);
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        throw new CsvRepositoryException(e);
+                    }
+                })
+                .map(String::valueOf)
+                .orElse(null);
         Arrays.stream(dtoClass.getDeclaredFields())
                 .filter(field -> field.isAnnotationPresent(OneToMany.class))
                 .forEach(field -> {
-                    OneToMany annotation = field.getAnnotation(OneToMany.class);
+                    Class<?> sourceDto = field.getAnnotation(OneToMany.class).source();
+                    String source = Optional.ofNullable(sourceDto.getAnnotation(Source.class))
+                            .map(Source::fileName)
+                            .map(org.inditex.ecommerce.persistence.csv.Files::toString)
+                            .orElseThrow(() -> new CsvRepositoryException("Annotation @OneToMany needs a source DTO class annotated with @Source"));
+                    Field foreignKey = Arrays.stream(sourceDto.getDeclaredFields())
+                            .filter(sourceField -> sourceField.isAnnotationPresent(ForeignKey.class))
+                            .filter(sourceField -> sourceField.getAnnotation(ForeignKey.class).origin().equals(dtoClass))
+                            .findFirst()
+                            .orElseThrow(() -> new CsvRepositoryException("Annotation @OneToMany needs a field annotated with @ForeignKey in source DTO"));
+                    Integer foreignKeyIndex = Optional.ofNullable(foreignKey.getAnnotation(Column.class))
+                            .map(Column::index)
+                            .orElseThrow(() -> new CsvRepositoryException("Field annotated with @ForeignKey must be annotated with @Column too"));
+                    Set<?> elements = readCsv(getFileName(source))
+                            .map(CsvRepository::getColumns)
+                            .filter(columns -> columns[foreignKeyIndex].trim().equals(id))
+                            .map(columns -> parse(sourceDto, columns))
+                            .collect(Collectors.toSet());
+                    Arrays.stream(dtoClass.getMethods())
+                            .filter(method -> method.getName().toLowerCase().contains(field.getName().toLowerCase()))
+                            .filter(method -> method.getName().toLowerCase().startsWith("set"))
+                            .findFirst()
+                            .ifPresent(setter -> {
+                                try {
+                                    setter.invoke(dto, elements);
+                                } catch (IllegalAccessException | InvocationTargetException e) {
+                                    throw new CsvRepositoryException(e);
+                                }
+                            });
                 });
     }
 
-    private static void setOneToOne() {
+    private static <D> void setOneToOne(Class<D> dtoClass, D dto) {
+        String id = Arrays.stream(dtoClass.getDeclaredFields())
+            .filter(field -> field.isAnnotationPresent(PrimaryKey.class))
+            .findFirst()
+            .map(field -> {
+                Method getter = Arrays.stream(dtoClass.getMethods())
+                        .filter(method -> method.getName().toLowerCase().contains(field.getName().toLowerCase()))
+                        .filter(method -> method.getName().toLowerCase().startsWith("get"))
+                        .findFirst()
+                        .orElseThrow(() -> new CsvRepositoryException("Classes with some field annotated with @OneToMany needs another field annotated with @PrimaryKey"));
+                try {
+                    return getter.invoke(dto);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new CsvRepositoryException(e);
+                }
+            })
+            .map(String::valueOf)
+            .orElse(null);
+        Arrays.stream(dtoClass.getDeclaredFields())
+                .filter(field -> field.isAnnotationPresent(OneToOne.class))
+                .forEach(field -> {
+                    Class<?> sourceDto = field.getAnnotation(OneToOne.class).source();
+                    String source = Optional.ofNullable(sourceDto.getAnnotation(Source.class))
+                            .map(Source::fileName)
+                            .map(org.inditex.ecommerce.persistence.csv.Files::toString)
+                            .orElseThrow(() -> new CsvRepositoryException("Annotation @OneToMany needs a source DTO class annotated with @Source"));
+                    Field foreignKey = Arrays.stream(sourceDto.getDeclaredFields())
+                            .filter(sourceField -> sourceField.isAnnotationPresent(ForeignKey.class))
+                            .filter(sourceField -> sourceField.getAnnotation(ForeignKey.class).origin().equals(dtoClass))
+                            .findFirst()
+                            .orElseThrow(() -> new CsvRepositoryException("Annotation @OneToMany needs a field annotated with @ForeignKey in source DTO"));
+                    Integer foreignKeyIndex = Optional.ofNullable(foreignKey.getAnnotation(Column.class))
+                            .map(Column::index)
+                            .orElseThrow(() -> new CsvRepositoryException("Field annotated with @ForeignKey must be annotated with @Column too"));
+                    Object element = readCsv(getFileName(source))
+                            .map(CsvRepository::getColumns)
+                            .filter(columns -> columns[foreignKeyIndex].trim().equals(id))
+                            .map(columns -> parse(sourceDto, columns))
+                            .findFirst()
+                            .orElse(null);
+                    Arrays.stream(dtoClass.getMethods())
+                            .filter(method -> method.getName().toLowerCase().contains(field.getName().toLowerCase()))
+                            .filter(method -> method.getName().toLowerCase().startsWith("set"))
+                            .findFirst()
+                            .ifPresent(setter -> {
+                                try {
+                                    setter.invoke(dto, element);
+                                } catch (IllegalAccessException | InvocationTargetException e) {
+                                    throw new CsvRepositoryException(e);
+                                }
+                            });
+                });
     }
 
     private static String[] getColumns(String line) {

@@ -12,7 +12,7 @@ import org.inditex.ecommerce.persistence.csv.annotations.Source;
 @NoArgsConstructor
 @AllArgsConstructor
 @Source(fileName = Files.STOCKS)
-public class StockDto {
+public class StockDto implements Dto {
 
     @Column(index = 0)
     @ForeignKey(origin = SizeDto.class)

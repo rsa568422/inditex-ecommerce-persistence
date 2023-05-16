@@ -3,7 +3,6 @@ package org.inditex.ecommerce.persistence.csv.entities;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.iditex.ecommerce.model.entities.Size;
 import org.inditex.ecommerce.persistence.csv.Files;
 import org.inditex.ecommerce.persistence.csv.annotations.Column;
 import org.inditex.ecommerce.persistence.csv.annotations.OneToMany;
@@ -16,7 +15,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Source(fileName = Files.PRODUCTS)
-public class ProductDto {
+public class ProductDto implements Dto {
 
     @PrimaryKey
     private Long id;
@@ -24,7 +23,7 @@ public class ProductDto {
     @Column(index = 1)
     private Long sequence;
 
-    @OneToMany(source = Files.SIZES)
-    private Set<Size> sizes;
+    @OneToMany(source = SizeDto.class)
+    private Set<SizeDto> sizes;
 
 }

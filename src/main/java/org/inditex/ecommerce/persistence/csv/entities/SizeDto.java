@@ -5,15 +5,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.inditex.ecommerce.persistence.csv.Files;
 import org.inditex.ecommerce.persistence.csv.annotations.*;
-import org.inditex.ecommerce.persistence.csv.repositories.StockCsvRepository;
-
-import java.util.Optional;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Source(fileName = Files.SIZES)
-public class SizeDto {
+public class SizeDto implements Dto {
 
     @PrimaryKey
     private Long id;
@@ -28,7 +25,7 @@ public class SizeDto {
     @Column(index = 3)
     private boolean special;
 
-    @OneToOne(source = StockCsvRepository.class, method = "findBySizeId")
-    private Optional<StockDto> stock;
+    @OneToOne(source = StockDto.class)
+    private StockDto stock;
 
 }
