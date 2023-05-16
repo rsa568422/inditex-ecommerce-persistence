@@ -1,13 +1,12 @@
 package org.inditex.ecommerce.persistence.csv.repositories;
 
 import org.inditex.ecommerce.persistence.csv.data.SizeData;
-import org.inditex.ecommerce.persistence.csv.entities.ProductDto;
 import org.inditex.ecommerce.persistence.csv.entities.SizeDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class SizeCsvRepositoryTest {
 

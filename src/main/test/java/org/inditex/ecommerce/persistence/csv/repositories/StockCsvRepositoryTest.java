@@ -1,7 +1,6 @@
 package org.inditex.ecommerce.persistence.csv.repositories;
 
 import org.inditex.ecommerce.persistence.csv.data.StockData;
-import org.inditex.ecommerce.persistence.csv.entities.SizeDto;
 import org.inditex.ecommerce.persistence.csv.entities.StockDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
