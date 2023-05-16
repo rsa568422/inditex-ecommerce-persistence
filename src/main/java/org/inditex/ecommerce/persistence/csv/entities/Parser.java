@@ -12,10 +12,10 @@ public class Parser {
 
     }
 
-    public static <E, D extends Dto> E parse(D dto) {
-        if (dto instanceof ProductDto) return (E) parseToProduct((ProductDto) dto);
-        if (dto instanceof SizeDto) return (E) parseToSize((SizeDto) dto);
-        if (dto instanceof StockDto) return (E) parseToStock((StockDto) dto);
+    public static <D extends Dto> Object parse(D dto) {
+        if (dto instanceof ProductDto) return parseToProduct((ProductDto) dto);
+        if (dto instanceof SizeDto) return parseToSize((SizeDto) dto);
+        if (dto instanceof StockDto) return parseToStock((StockDto) dto);
         return null;
     }
 
