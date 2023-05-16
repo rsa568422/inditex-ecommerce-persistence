@@ -19,9 +19,4 @@ public class SizeCsvRepository extends CsvRepository<SizeDto, Size> implements S
         return SizeDto.class;
     }
 
-    @Override
-    protected Class<Size> getEntityClass() {
-        return Size.class;
-    }
-
 }

@@ -18,9 +18,4 @@ public class StockCsvRepository extends CsvRepository<StockDto, Stock> implement
         return StockDto.class;
     }
 
-    @Override
-    protected Class<Stock> getEntityClass() {
-        return Stock.class;
-    }
-
 }

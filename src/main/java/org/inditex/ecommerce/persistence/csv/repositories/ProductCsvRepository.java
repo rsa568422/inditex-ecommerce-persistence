@@ -18,9 +18,4 @@ public class ProductCsvRepository extends CsvRepository<ProductDto, Product> imp
         return ProductDto.class;
     }
 
-    @Override
-    protected Class<Product> getEntityClass() {
-        return Product.class;
-    }
-
 }
